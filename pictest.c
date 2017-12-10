@@ -22,27 +22,47 @@
 #include	<stdio.h>
 
 // Define which pin to use to blink LED
-#define LED0 RA0
-#define LED1 RA1
+#define LED0 RC0
+#define LED1 RC1
+#define LED2 RC2
+#define LED3 RC3
+#define LED4 RC4
+#define LED5 RC5
 
 // Must define the oscillator frequency (4MHz) to use functions like __delay_ms
 // Can be found in data sheet under "Oscillator Configurations"
 #define _XTAL_FREQ 4000000
 
 void main(void) {
-    ANSEL = 0x00;   // Set ports as digital I/O, not analog input
-    ADCON0 = 0x00;  // Shut off A/D converter
-//    CMCON = 0x07;   // Shut off Comparator
-    VRCON = 0x00;   // Shut off Voltage Reference
-    TRISA = 0x08;  // GP3 input, reset all output
-    PORTA = 0x00;    // Make all pins 0
+    ANSEL = 0b00000000;   // Set ports as digital I/O, not analog input
+    ADCON0 = 0b00000000;  // Shut off A/D converter
+    CM1CON0 = 0b00000000;   // Shut off Comparator
+    CM2CON0 = 0b00000000;   // Shut off Comparator
+    VRCON = 0b00000000;   // Shut off Voltage Reference
+    // TRISA is the data direction register for PORTA.
+    // Here we set all pins to be outputs (0)
+    TRISA = 0b00000000;
+    PORTA = 0b00000000;    // Make all pins 0
+    // TRISC is the data direction register for PORTC.
+    // Here we set all pins to be outputs (0)
+    TRISC = 0b00000000;
+    PORTC = 0b00000000;    // Make all pins 0
     
     while(1) {
         __delay_ms(500);
-        LED0 = 0;
-        LED1 = 1;
-        __delay_ms(500);
         LED0 = 1;
+        LED1 = 1;
+        LED2 = 1;
+        LED3 = 1;
+        LED4 = 1;
+        LED5 = 1;
+        __delay_ms(500);
+        LED0 = 0;
         LED1 = 0;
+        LED2 = 0;
+        LED3 = 0;
+        LED4 = 0;
+        LED5 = 0;
+        
     }
 }
