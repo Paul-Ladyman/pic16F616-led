@@ -19,15 +19,15 @@
 
 // Using XC compiler
 #include <xc.h>
-#include	<stdio.h>
+#include <stdio.h>
 
 // Define which pin to use to blink LED
-#define LED0 RC0
-#define LED1 RC1
-#define LED2 RC2
-#define LED3 RC3
-#define LED4 RC4
-#define LED5 RC5
+#define BUTTON0 RA0
+#define BUTTON1 RA1
+#define BUTTON2 RA2
+#define LED0 RC3
+#define LED1 RC4
+#define LED2 RC5
 
 // Must define the oscillator frequency (4MHz) to use functions like __delay_ms
 // Can be found in data sheet under "Oscillator Configurations"
@@ -39,9 +39,12 @@ void main(void) {
     CM1CON0 = 0b00000000;   // Shut off Comparator
     CM2CON0 = 0b00000000;   // Shut off Comparator
     VRCON = 0b00000000;   // Shut off Voltage Reference
-    // TRISA is the data direction register for PORTA.
-    // Here we set all pins to be outputs (0)
-    TRISA = 0b00000000;
+    /* 
+     * TRISA is the data direction register for PORTA.
+     * Here we set RA0 to be a digital input
+     * and all other pins to be outputs (0)
+     */
+    TRISA = 0b00000111;
     PORTA = 0b00000000;    // Make all pins 0
     // TRISC is the data direction register for PORTC.
     // Here we set all pins to be outputs (0)
@@ -49,20 +52,13 @@ void main(void) {
     PORTC = 0b00000000;    // Make all pins 0
     
     while(1) {
-        __delay_ms(500);
-        LED0 = 1;
-        LED1 = 1;
-        LED2 = 1;
-        LED3 = 1;
-        LED4 = 1;
-        LED5 = 1;
-        __delay_ms(500);
-        LED0 = 0;
-        LED1 = 0;
-        LED2 = 0;
-        LED3 = 0;
-        LED4 = 0;
-        LED5 = 0;
-        
+        // Read digital state of input
+        // the state is inverted since inputs are active low
+        int state0 = !BUTTON0;
+        int state1 = !BUTTON1;
+        int state2 = !BUTTON2;
+        LED0 = state0;
+        LED1 = state1;
+        LED2 = state2;
     }
 }
