@@ -42,17 +42,24 @@ void initMain() {
 
     LED0 = 1;
     
+    // Enable external interrupt on change for A0
     //    IOCbits.IOCA0 = 1;
     IOCAbits.IOCA0 = 1;
 //    IOCbits.IOC0 = 1;
 //    IOCAbits.IOC0 = 1;
     
+    // Set external interrupt to trigger on falling edge
     OPTION_REGbits.INTEDG = 0;
 
+    // Clear external interrupt flag
 //    INTCONbits.INTF = 0;
     INTCONbits.RAIF = 0;
 //    INTCONbits.INTE = 1;
+    
+    // Enable external interrupts
     INTCONbits.RAIE = 1;
+    
+    // Enable global interrupts
     INTCONbits.GIE = 1;
 }
 
