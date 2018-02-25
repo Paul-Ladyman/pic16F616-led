@@ -28,10 +28,10 @@ void initMain() {
      * and all other pins to be outputs (0)
      */
     TRISA = 0b00000111;
-    
+
     // Enable weak pull-ups globally
     OPTION_REGbits.nRAPU = 0;
-    
+
     // Enable weak pull-ups for for RA0, RA1, RA2
     WPUA = 0b00000111;
     /*
@@ -39,14 +39,36 @@ void initMain() {
      * Here we set all pins to be outputs (0)
      */
     TRISC = 0;
+
+    LED0 = 1;
+    
+    //    IOCbits.IOCA0 = 1;
+    IOCAbits.IOCA0 = 1;
+//    IOCbits.IOC0 = 1;
+//    IOCAbits.IOC0 = 1;
+    
+    OPTION_REGbits.INTEDG = 0;
+
+//    INTCONbits.INTF = 0;
+    INTCONbits.RAIF = 0;
+//    INTCONbits.INTE = 1;
+    INTCONbits.RAIE = 1;
+    INTCONbits.GIE = 1;
 }
 
 void main(void) {
     initMain();
-    
-    while(1) {
-        LED0 = BUTTON0;
-        LED1 = BUTTON1;
-        LED2 = BUTTON2;
+
+    while (1) {
+//        LED0 = BUTTON0;
+//        LED1 = BUTTON1;
+//        LED2 = BUTTON2;
     }
+}
+
+void interrupt interruptHandler(void) {
+//    INTCONbits.INTF = 0;
+    LED0 = ~LED0;
+    
+    INTCONbits.RAIF = 0;
 }
