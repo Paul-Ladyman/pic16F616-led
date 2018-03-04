@@ -21,7 +21,7 @@
 void initMain() {
     // Set ports as digital I/O, not analogue input
     ANSEL = 0b00000000;
-
+    
     /* 
      * TRISA is the data direction register for PORTA.
      * Here we set RA0, RA1 and RA2 to be a digital input
@@ -39,26 +39,13 @@ void initMain() {
      * Here we set all pins to be outputs (0)
      */
     TRISC = 0;
-
-    LED0 = 1;
     
-    // Enable external interrupt on change for A0
-    //    IOCbits.IOCA0 = 1;
-    IOCAbits.IOCA0 = 1;
-//    IOCbits.IOC0 = 1;
-//    IOCAbits.IOC0 = 1;
-    
-    // Set external interrupt to trigger on falling edge
-    OPTION_REGbits.INTEDG = 0;
-
-    // Clear external interrupt flag
-//    INTCONbits.INTF = 0;
+    // Enable external interrupt on change for A0,1,2
+    IOCA = 0b00000111;
+    // Clear IOC flag
     INTCONbits.RAIF = 0;
-//    INTCONbits.INTE = 1;
-    
-    // Enable external interrupts
+    // Enable IOC interrupts
     INTCONbits.RAIE = 1;
-    
     // Enable global interrupts
     INTCONbits.GIE = 1;
 }
@@ -66,16 +53,19 @@ void initMain() {
 void main(void) {
     initMain();
 
-    while (1) {
-//        LED0 = BUTTON0;
-//        LED1 = BUTTON1;
-//        LED2 = BUTTON2;
-    }
+    while (1);
 }
 
-void interrupt interruptHandler(void) {
-//    INTCONbits.INTF = 0;
-    LED0 = ~LED0;
-    
-    INTCONbits.RAIF = 0;
+void interrupt ISR(void) {
+    /* Check to see which interrupt has been triggered
+     * Check the interrupt we expect is enabled and that its flag is set
+     */
+    if (RAIE && RAIF) {
+        // Must read from PORTA to allow IOC flag to be cleared
+        LED0 = BUTTON0;
+        LED1 = BUTTON1;
+        LED2 = BUTTON2;
+        // Must clear IOC flag to ensure interrupt service routine is not called again
+        INTCONbits.RAIF = 0;
+    }
 }
