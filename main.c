@@ -9,44 +9,82 @@
 
 #include "configuration.h"
 
-// Define three pins from PortA to use to read buttons
-#define BUTTON0 RA0
-#define BUTTON1 RA1
-#define BUTTON2 RA2
+// Define a pin from PortA to use as potentiometer input
+#define POT0 RA0
 // Define three pins from PortC to use as outputs for LEDs
 #define LED0 RC3
 #define LED1 RC4
 #define LED2 RC5
 
 void initMain() {
-    // Set ports as digital I/O, not analogue input
-    ANSEL = 0b00000000;
+    // Set all ports as digital I/O, except AN0 which is set to analog input
+    ANSEL = 0b00000001;
 
     /* 
      * TRISA is the data direction register for PORTA.
-     * Here we set RA0, RA1 and RA2 to be a digital input
-     * and all other pins to be outputs (0)
+     * Here we set RA0 to be an input
+     * and all other pins to be outputs 
      */
-    TRISA = 0b00000111;
-    
-    // Enable weak pull-ups globally
-    OPTION_REGbits.nRAPU = 0;
-    
-    // Enable weak pull-ups for for RA0, RA1, RA2
-    WPUA = 0b00000111;
+    TRISA = 0b00000001;
+
     /*
      * TRISC is the data direction register for PORTC.
      * Here we set all pins to be outputs (0)
      */
     TRISC = 0;
+
+    /*
+     * Configure ADC
+     */
+
+    // Set conversion clock to Fosc/8
+    ADCON1bits.ADCS = 0b001;
+
+    // Set ADC results to be right justified (MSB in ADRESH)
+    ADCON0bits.ADFM = 1;
+
+    // Set Vref+ to Vdd
+    ADCON0bits.VCFG = 0;
+
+    // Set input channel to AN0
+    ADCON0bits.CHS = 0b0000;
+
+    // Zero ADC output variables
+    ADRESL = 0;
+    ADRESH = 0;
 }
 
 void main(void) {
     initMain();
-    
-    while(1) {
-        LED0 = BUTTON0;
-        LED1 = BUTTON1;
-        LED2 = BUTTON2;
+
+    int result;
+
+    while (1) {
+        // enable ADC, begin acquiring input voltage
+        ADCON0bits.ADON = 1;
+
+        // wait for minimum acquisition time
+        __delay_us(10);
+        // start conversion of acquired voltage
+        ADCON0bits.GO = 1;
+        // wait for conversion to finish
+        while (ADCON0bits.GO_nDONE);
+
+        // Combine result MSB and LSB
+        result = ((ADRESH << 8) + ADRESL);
+
+        if (result <= 150) {
+            LED0 = 1;
+            LED1 = 0;
+            LED2 = 0;
+        } else if (result > 150 && result <= 450) {
+            LED0 = 0;
+            LED1 = 1;
+            LED2 = 0;
+        } else {
+            LED0 = 0;
+            LED1 = 0;
+            LED2 = 1;
+        }
     }
 }
