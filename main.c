@@ -9,69 +9,68 @@
 
 #include "configuration.h"
 
-// Define a pin from PortA to use as potentiometer input
-#define POT0 RA0
 // Define three pins from PortC to use as outputs for LEDs
 #define LED0 RC3
 #define LED1 RC4
 #define LED2 RC5
 
 void initMain() {
+    /*
+     * Configure IO
+     */
     // Set all ports as digital I/O, except AN0 which is set to analog input
     ANSEL = 0b00000001;
-
-    /* 
-     * TRISA is the data direction register for PORTA.
-     * Here we set RA0 to be an input
-     * and all other pins to be outputs 
-     */
+    // Set RA0 to be an input and all other PORTA pins to be outputs 
     TRISA = 0b00000001;
-
-    /*
-     * TRISC is the data direction register for PORTC.
-     * Here we set all pins to be outputs (0)
-     */
+    // Set all PORTA pins to be outputs
     TRISC = 0;
 
     /*
      * Configure ADC
      */
-
     // Set conversion clock to Fosc/8
     ADCON1bits.ADCS = 0b001;
-
     // Set ADC results to be right justified (MSB in ADRESH)
     ADCON0bits.ADFM = 1;
-
     // Set Vref+ to Vdd
     ADCON0bits.VCFG = 0;
-
     // Set input channel to AN0
     ADCON0bits.CHS = 0b0000;
-
     // Zero ADC output variables
     ADRESL = 0;
     ADRESH = 0;
+    
+    /*
+     * Configure interrupt
+     */
+    // Clear ADC interrupt flag
+    PIR1bits.ADIF = 0;
+    // Enable ADC interrupts
+    PIE1bits.ADIE = 1;
+    // Enable peripheral interrupts
+    INTCONbits.PEIE = 1;
+    // Enable global interrupts
+    INTCONbits.GIE = 1;
 }
 
 void main(void) {
     initMain();
 
-    int result;
-
     while (1) {
         // enable ADC, begin acquiring input voltage
         ADCON0bits.ADON = 1;
-
         // wait for minimum acquisition time
         __delay_us(10);
         // start conversion of acquired voltage
         ADCON0bits.GO = 1;
-        // wait for conversion to finish
-        while (ADCON0bits.GO_nDONE);
+    }
+}
 
+void interrupt ISR(void) {
+    // if an ADC conversion result is ready
+    if (PIE1bits.ADIE && PIR1bits.ADIF) {
         // Combine result MSB and LSB
-        result = ((ADRESH << 8) + ADRESL);
+        int result = ((ADRESH << 8) + ADRESL);
 
         if (result <= 300) {
             LED0 = 1;
@@ -86,5 +85,7 @@ void main(void) {
             LED1 = 0;
             LED2 = 1;
         }
+        // Clear ADC interrupt flag
+        PIR1bits.ADIF = 0;
     }
 }
