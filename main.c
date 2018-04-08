@@ -73,15 +73,15 @@ void main(void) {
         // Combine result MSB and LSB
         result = ((ADRESH << 8) + ADRESL);
 
-        if (result <= 150) {
+        if (result <= 300) {
             LED0 = 1;
             LED1 = 0;
             LED2 = 0;
-        } else if (result > 150 && result <= 450) {
+        } else if (result >= 350 && result <= 600) {
             LED0 = 0;
             LED1 = 1;
             LED2 = 0;
-        } else {
+        } else if (result >= 650) {
             LED0 = 0;
             LED1 = 0;
             LED2 = 1;
